@@ -1,12 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Wheel from "wheel-of-fortune-kop";
 import "wheel-of-fortune-kop/style.css";
 import Papa from "papaparse";
 
+const STORAGE_KEY = "wheel-options";
+
+const loadItems = (): string[] => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
+  } catch {
+    return [];
+  }
+};
+
 const WheelManager: React.FC = () => {
-  const [items, setItems] = useState<string[]>([]);
+  const [items, setItems] = useState<string[]>(loadItems);
   const [input, setInput] = useState("");
   const [lastSelected, setLastSelected] = useState<string>("");
+
+  // Persist options to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
 
   // CSV Upload Handler
   const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,7 +127,16 @@ const WheelManager: React.FC = () => {
       </div>
 
       {/* Wheel Preview */}
-      <div className="mt-6">
+      {/* Rotate canvas by half a slice so the pointer lands on a slice center,
+          not the seam (lib stops on slice boundaries). */}
+      <div
+        className="mt-6"
+        style={
+          {
+            "--slice-offset": `${-180 / (items.length || 8)}deg`,
+          } as React.CSSProperties
+        }
+      >
         <Wheel
           options={items}
           font="Verdana"
@@ -118,7 +144,7 @@ const WheelManager: React.FC = () => {
             setLastSelected(selected);
           }}
           playSpinAudio={true}
-          playCheerAudio={false}
+          playCheerAudio={true}
         />
       </div>
       {/* <div className="hidden">{lastSelected}</div> */}

@@ -1,0 +1,17 @@
+/* Override wheel-of-fortune-kop: keep "Last Winner" banner in normal flow
+   so it no longer overlaps the Spin button on mobile (lib sets it position:fixed). */
+body .last-winner {
+  position: static;
+  transform: none;
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Keep the wheel responsive on small screens, and offset the rendered
+   wheel by half a slice so the pointer points at a slice center, not a seam. */
+.wheel-canvas {
+  max-width: 100%;
+  height: auto;
+  transform: rotate(var(--slice-offset, 0deg));
+}
